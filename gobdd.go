@@ -2,8 +2,10 @@ package gobdd
 
 import (
 	"bufio"
+	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/anuragh27crony/gobdd/formatter/cucumber"
 	"io/ioutil"
 	"log"
 	"os"
@@ -13,6 +15,7 @@ import (
 	"strconv"
 	"strings"
 	"testing"
+	"time"
 
 	gherkin "github.com/cucumber/gherkin-go/v13"
 	msgs "github.com/cucumber/messages-go/v12"
@@ -263,6 +266,8 @@ func (s *Suite) Run() {
 		return
 	}
 
+	var features []cucumber.Feature
+
 	files, err := filepath.Glob(s.options.featuresPaths)
 	if err != nil {
 		s.t.Fatalf("cannot find features/ directory")
@@ -273,17 +278,19 @@ func (s *Suite) Run() {
 	}
 
 	for _, file := range files {
-		err = s.executeFeature(file)
+		formattedFeature, err := s.executeFeature(file)
+		features = append(features, formattedFeature)
 		if err != nil {
 			s.t.Fail()
 		}
 	}
+	writeJsonFile("/home/vagrant/Documents/result.json", features)
 }
 
-func (s *Suite) executeFeature(file string) error {
+func (s *Suite) executeFeature(file string) (cucumber.Feature, error) {
 	f, err := os.Open(file)
 	if err != nil {
-		return fmt.Errorf("cannot open file %s", file)
+		return cucumber.Feature{}, fmt.Errorf("cannot open file %s", file)
 	}
 	defer f.Close()
 	fileIO := bufio.NewReader(f)
@@ -294,10 +301,24 @@ func (s *Suite) executeFeature(file string) error {
 	}
 
 	if doc.Feature == nil {
-		return nil
+		return cucumber.Feature{}, nil
 	}
 
-	return s.runFeature(doc.Feature)
+	return cucumber.FormatFeature(doc.Feature), s.runFeature(doc.Feature)
+}
+
+func writeJsonFile(jsonFilePath string, data interface{}) {
+	b, err := json.MarshalIndent(data, "", "\t")
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+
+	err = ioutil.WriteFile(jsonFilePath, b, os.ModePerm)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
 }
 
 func (s *Suite) runFeature(feature *msgs.GherkinDocument_Feature) error {
@@ -499,11 +520,33 @@ func (s *Suite) runStep(ctx Context, t *testing.T, step *msgs.GherkinDocument_Fe
 		ctx.Set(TestingTKey{}, t)
 		defer ctx.Set(TestingTKey{}, nil)
 
+		//Timer for test duration
+		t.Logf("Executing Step <<%v>>", step.Text)
+		starttimer(ctx)
+
 		s.callBeforeSteps(ctx)
 		defer s.callAfterSteps(ctx)
 
+		//Method to register the test running status & test duration
+		defer registerStepstatus(ctx)
+
 		def.run(ctx, t, params)
 	})
+}
+
+func registerStepstatus(ctx Context) {
+	start, _ := ctx.Get(time.Time{})
+	duration := time.Since(start.(time.Time))
+
+	tObj, _ := ctx.Get(TestingTKey{})
+	t := tObj.(*testing.T)
+	t.Logf("Step Execution time is %v", duration)
+	t.Logf("Scenario failed status %v", t.Failed())
+	t.Logf("Scenario skipped status %v", t.Skipped())
+}
+
+func starttimer(ctx Context) {
+	ctx.Set(time.Time{}, time.Now())
 }
 
 func (def *stepDef) run(ctx Context, t TestingT, params [][]byte) { // nolint:interfacer

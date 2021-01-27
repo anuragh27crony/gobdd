@@ -1,7 +1,0 @@
-package reports
-
-
-func main(){
-
-
-}

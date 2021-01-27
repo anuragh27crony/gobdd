@@ -2,7 +2,6 @@ package gobdd
 
 import "testing"
 
-func testingmain(t *testing.T){
-	main()
+func testingmain(t *testing.T) {
 	t.Logf("Completed")
 }

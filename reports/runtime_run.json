@@ -1,0 +1,475 @@
+[
+  {
+    "uri": "features/operator.feature",
+    "id": "stream-operator-deployment-scenarios",
+    "keyword": "Feature",
+    "name": "Stream Operator Deployment Scenarios",
+    "description": "  Stream Operator is deployed through Service Catalog Entry.\n  The feature verifies all possible installation scenarios.",
+    "line": 1,
+    "comments": [
+      {
+        "value": "# This scenario arises when cleanup activity is performed",
+        "line": 20
+      },
+      {
+        "value": "# This is negative scenario to verify no material impact due to re-installing same version",
+        "line": 29
+      },
+      {
+        "value": "# TODO: Unable to assert the results here.",
+        "line": 30
+      }
+    ],
+    "elements": [
+      {
+        "id": "stream-operator-deployment-scenarios;installing-new-stream-operator-with-valid-inputs",
+        "keyword": "Scenario",
+        "name": "Installing new Stream Operator with valid inputs",
+        "description": "",
+        "line": 7,
+        "type": "scenario",
+        "tags": [
+          {
+            "name": "@wip",
+            "line": 6
+          }
+        ],
+        "steps": [
+          {
+            "keyword": "Given ",
+            "name": "A valid kubernetes cluster is running",
+            "line": 8,
+            "match": {
+              "location": "operator_test.go:118"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 1901179532
+            }
+          },
+          {
+            "keyword": "When ",
+            "name": "Install Stream Operator with valid inputs",
+            "line": 9,
+            "match": {
+              "location": "features/operator.feature:9"
+            },
+            "result": {
+              "status": "undefined"
+            }
+          },
+          {
+            "keyword": "Then ",
+            "name": "Stream Operator should be installed successfully",
+            "line": 10,
+            "match": {
+              "location": "features/operator.feature:10"
+            },
+            "result": {
+              "status": "undefined"
+            }
+          },
+          {
+            "keyword": "And ",
+            "name": "Helm List should display new version of Stream Operator with status DEPLOYED",
+            "line": 11,
+            "match": {
+              "location": "features/operator.feature:11"
+            },
+            "result": {
+              "status": "undefined"
+            }
+          }
+        ]
+      },
+      {
+        "id": "stream-operator-deployment-scenarios;uninstall-stream-operator",
+        "keyword": "Scenario",
+        "name": "UnInstall Stream Operator",
+        "description": "",
+        "line": 22,
+        "type": "scenario",
+        "tags": [
+          {
+            "name": "@wip",
+            "line": 21
+          }
+        ],
+        "steps": [
+          {
+            "keyword": "Given ",
+            "name": "A valid kubernetes cluster is running",
+            "line": 23,
+            "match": {
+              "location": "operator_test.go:118"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 204811243
+            }
+          },
+          {
+            "keyword": "And ",
+            "name": "Stream Operator is running",
+            "line": 24,
+            "match": {
+              "location": "features/operator.feature:24"
+            },
+            "result": {
+              "status": "undefined"
+            }
+          },
+          {
+            "keyword": "When ",
+            "name": "Stream Operator is deleted/uninstalled from cluster",
+            "line": 25,
+            "match": {
+              "location": "features/operator.feature:25"
+            },
+            "result": {
+              "status": "undefined"
+            }
+          },
+          {
+            "keyword": "Then ",
+            "name": "Stream Operator should be uninstalled",
+            "line": 26,
+            "match": {
+              "location": "features/operator.feature:26"
+            },
+            "result": {
+              "status": "undefined"
+            }
+          },
+          {
+            "keyword": "And ",
+            "name": "Helm List should not display Stream Operator chart",
+            "line": 27,
+            "match": {
+              "location": "features/operator.feature:27"
+            },
+            "result": {
+              "status": "undefined"
+            }
+          }
+        ]
+      },
+      {
+        "id": "stream-operator-deployment-scenarios;re-installing-stream-operator-with-same-version-\u0026-same-name;;2",
+        "keyword": "Scenario Outline",
+        "name": "Re-Installing Stream Operator with same version \u0026 same name",
+        "description": "",
+        "line": 39,
+        "type": "scenario",
+        "tags": [
+          {
+            "name": "@wip",
+            "line": 31
+          }
+        ],
+        "steps": [
+          {
+            "keyword": "Given ",
+            "name": "A valid kubernetes cluster is running",
+            "line": 39,
+            "match": {
+              "location": "operator_test.go:118"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 199009505
+            }
+          },
+          {
+            "keyword": "And ",
+            "name": "Stream Operator with version 0.1.7-12 is running",
+            "line": 39,
+            "match": {
+              "location": "features/operator.feature:34"
+            },
+            "result": {
+              "status": "undefined"
+            }
+          },
+          {
+            "keyword": "When ",
+            "name": "Stream Operator is Re-Installed with version 0.1.7-12",
+            "line": 39,
+            "match": {
+              "location": "features/operator.feature:35"
+            },
+            "result": {
+              "status": "undefined"
+            }
+          },
+          {
+            "keyword": "Then ",
+            "name": "Error should be displayed",
+            "line": 39,
+            "match": {
+              "location": "streamService_test.go:72"
+            },
+            "result": {
+              "status": "skipped"
+            }
+          }
+        ]
+      },
+      {
+        "id": "stream-operator-deployment-scenarios;rolling-upgrade-of-stream-operator-with-new-version;;2",
+        "keyword": "Scenario Outline",
+        "name": "Rolling Upgrade of Stream Operator with new version",
+        "description": "",
+        "line": 51,
+        "type": "scenario",
+        "tags": [
+          {
+            "name": "@wip",
+            "line": 41
+          }
+        ],
+        "steps": [
+          {
+            "keyword": "Given ",
+            "name": "A valid kubernetes cluster is running",
+            "line": 51,
+            "match": {
+              "location": "operator_test.go:118"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 212057147
+            }
+          },
+          {
+            "keyword": "And ",
+            "name": "Stream Operator with version 0.1.6-9 is running",
+            "line": 51,
+            "match": {
+              "location": "features/operator.feature:44"
+            },
+            "result": {
+              "status": "undefined"
+            }
+          },
+          {
+            "keyword": "When ",
+            "name": "Stream Operator is upgraded to version 0.1.7-12",
+            "line": 51,
+            "match": {
+              "location": "features/operator.feature:45"
+            },
+            "result": {
+              "status": "undefined"
+            }
+          },
+          {
+            "keyword": "Then ",
+            "name": "Stream Operator should be upgraded successfully",
+            "line": 51,
+            "match": {
+              "location": "features/operator.feature:46"
+            },
+            "result": {
+              "status": "undefined"
+            }
+          },
+          {
+            "keyword": "And ",
+            "name": "Stream Operator should be available during rolling-upgrade",
+            "line": 51,
+            "match": {
+              "location": "features/operator.feature:47"
+            },
+            "result": {
+              "status": "undefined"
+            }
+          },
+          {
+            "keyword": "And ",
+            "name": "Helm List should display version 0.1.7-12 for Stream Operator",
+            "line": 51,
+            "match": {
+              "location": "features/operator.feature:48"
+            },
+            "result": {
+              "status": "undefined"
+            }
+          }
+        ]
+      },
+      {
+        "id": "stream-operator-deployment-scenarios;rollback-of-stream-operator-to-old-stable-version;;2",
+        "keyword": "Scenario Outline",
+        "name": "Rollback of Stream Operator to Old stable version",
+        "description": "",
+        "line": 62,
+        "type": "scenario",
+        "tags": [
+          {
+            "name": "@wip",
+            "line": 53
+          }
+        ],
+        "steps": [
+          {
+            "keyword": "Given ",
+            "name": "A valid kubernetes cluster is running",
+            "line": 62,
+            "match": {
+              "location": "operator_test.go:118"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 203642224
+            }
+          },
+          {
+            "keyword": "And ",
+            "name": "Stream Operator is upgraded to version 0.1.6-9",
+            "line": 62,
+            "match": {
+              "location": "features/operator.feature:56"
+            },
+            "result": {
+              "status": "undefined"
+            }
+          },
+          {
+            "keyword": "When ",
+            "name": "Stream Operator SCE is rolledback with version 0.1.7-12",
+            "line": 62,
+            "match": {
+              "location": "features/operator.feature:57"
+            },
+            "result": {
+              "status": "undefined"
+            }
+          },
+          {
+            "keyword": "Then ",
+            "name": "Stream Operator should be rolled back to version 0.1.7-12 successfully",
+            "line": 62,
+            "match": {
+              "location": "features/operator.feature:58"
+            },
+            "result": {
+              "status": "undefined"
+            }
+          },
+          {
+            "keyword": "And ",
+            "name": "Helm List should display version 0.1.7-12 for Stream Operator",
+            "line": 62,
+            "match": {
+              "location": "features/operator.feature:59"
+            },
+            "result": {
+              "status": "undefined"
+            }
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "uri": "features/streamService.feature",
+    "id": "stream-service-deployment-scenarios",
+    "keyword": "Feature",
+    "name": "Stream Service Deployment Scenarios",
+    "description": "  Stream Service is deployed through Service Catalog Entry onto an existing Kubernetes cluster.\n  The feature verifies all possible installation scenarios.",
+    "line": 4,
+    "comments": [
+      {
+        "value": "#  Style: Functional requirement style rather than procedural reference.",
+        "line": 1
+      },
+      {
+        "value": "# https://cucumber.io/docs/bdd/better-gherkin/",
+        "line": 2
+      },
+      {
+        "value": "#    This scenario is for or blue-green deployments or A/B testing",
+        "line": 17
+      },
+      {
+        "value": "# This is negative scenario to verify no material impact due to re-installing same version",
+        "line": 37
+      },
+      {
+        "value": "# This scenario arises when cleanup activity is performed",
+        "line": 69
+      }
+    ],
+    "elements": [
+      {
+        "id": "stream-service-deployment-scenarios;installing-new-stream-service-with-valid-inputs",
+        "keyword": "Scenario",
+        "name": "Installing new Stream Service with valid inputs",
+        "description": "",
+        "line": 10,
+        "type": "scenario",
+        "tags": [
+          {
+            "name": "@srall",
+            "line": 9
+          },
+          {
+            "name": "@wip",
+            "line": 9
+          }
+        ],
+        "steps": [
+          {
+            "keyword": "Given ",
+            "name": "A valid kubernetes cluster is running",
+            "line": 11,
+            "match": {
+              "location": "operator_test.go:118"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 204022179
+            }
+          },
+          {
+            "keyword": "When ",
+            "name": "Install Stream Service with valid input",
+            "line": 12,
+            "match": {
+              "location": "streamService_test.go:35"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 158322869430
+            }
+          },
+          {
+            "keyword": "Then ",
+            "name": "Stream Service should be installed successfully",
+            "line": 13,
+            "match": {
+              "location": "streamService_test.go:63"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 6036247847
+            }
+          },
+          {
+            "keyword": "And ",
+            "name": "Helm List should display new version of Stream Service with status \u003cdeployed\u003e",
+            "line": 14,
+            "match": {
+              "location": "streamService_test.go:81"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 65559
+            }
+          }
+        ]
+      }
+    ]
+  }
+]

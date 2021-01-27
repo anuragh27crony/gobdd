@@ -1,0 +1,13 @@
+main:
+  - title: "Quick start"
+    url: /quick-start.html
+  - title: "Context"
+    url: /context.html
+  - title: "Creating steps"
+    url: /creating-steps.html
+  - title: "Suite's options"
+    url: /suite-options.html
+  - title: "Parameter types"
+    url: /parameter-types.html
+  - title: "GitHub"
+    url: https://github.com/go-bdd/gobdd

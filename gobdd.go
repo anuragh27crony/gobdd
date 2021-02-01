@@ -28,6 +28,8 @@ type Suite struct {
 	options        SuiteOptions
 	hasStepErrors  bool
 	parameterTypes map[string][]string
+	reportpath     string
+	generatereport bool
 }
 
 // SuiteOptions holds all the information about how the suite or features/steps should be configured
@@ -163,6 +165,11 @@ func NewSuite(t TestingT, optionClosures ...func(*SuiteOptions)) *Suite {
 	return s
 }
 
+func (s *Suite) WithJsonReport(filepath string) {
+	s.generatereport = true
+	s.reportpath = filepath
+}
+
 // AddParameterTypes adds a list of parameter types that will be used to simplify step definitions.
 //
 // The first argument is the parameter type and the second parameter is a list of regular expressions
@@ -284,7 +291,10 @@ func (s *Suite) Run() {
 			s.t.Fail()
 		}
 	}
-	writeJsonFile("/home/vagrant/Documents/result.json", features)
+	if s.generatereport {
+		writeJsonFile(s.reportpath, features)
+	}
+
 }
 
 func (s *Suite) executeFeature(file string) (cucumber.Feature, error) {
@@ -304,7 +314,9 @@ func (s *Suite) executeFeature(file string) (cucumber.Feature, error) {
 		return cucumber.Feature{}, nil
 	}
 
-	return cucumber.FormatFeature(doc.Feature), s.runFeature(doc.Feature)
+	formattedFeature, err := s.runFeature(doc.Feature)
+
+	return formattedFeature, err
 }
 
 func writeJsonFile(jsonFilePath string, data interface{}) {
@@ -321,17 +333,20 @@ func writeJsonFile(jsonFilePath string, data interface{}) {
 	}
 }
 
-func (s *Suite) runFeature(feature *msgs.GherkinDocument_Feature) error {
+func (s *Suite) runFeature(feature *msgs.GherkinDocument_Feature) (cucumber.Feature, error) {
 	for _, tag := range feature.GetTags() {
 		if contains(s.options.ignoreTags, tag.Name) {
 			s.t.Logf("the feature (%s) is ignored ", feature.GetName())
-			return nil
+			return cucumber.FormatFeatureWithScenario(feature), nil
 		}
 	}
 
 	log.SetOutput(ioutil.Discard)
 
 	hasErrors := false
+
+	//TODO: ADD Report Formatted Feature Object to Context
+	formattedFeature := cucumber.FormatFeature(feature)
 
 	s.t.Run(fmt.Sprintf("%s %s", strings.TrimSpace(feature.Keyword), feature.Name), func(t *testing.T) {
 		var bkgSteps *msgs.GherkinDocument_Feature_Background
@@ -342,24 +357,29 @@ func (s *Suite) runFeature(feature *msgs.GherkinDocument_Feature) error {
 			}
 
 			scenario := child.GetScenario()
+
 			if scenario == nil {
 				continue
 			}
+			ctx := NewContext()
 
 			if s.skipScenario(scenario.GetTags()) {
+				//TODO: ADD SKIPPED SCENARIOS to Report Formatted Feature Object
+				formattedFeature.AddScenario(cucumber.FormatScenarioWithSteps(scenario, "skipped"))
 				t.Log(fmt.Sprintf("Skipping scenario %s", scenario.Name))
 				continue
 			}
-			ctx := NewContext()
-			s.runScenario(ctx, scenario, bkgSteps, t)
+
+			formattedscenario := s.runScenario(ctx, scenario, bkgSteps, t)
+			formattedFeature.AddScenario(formattedscenario)
+
 		}
 	})
 
 	if hasErrors {
-		return errors.New("the feature contains errors")
+		return cucumber.Feature{}, errors.New("the feature contains errors")
 	}
-
-	return nil
+	return formattedFeature, nil
 }
 
 func (s *Suite) getOutlineStep(
@@ -462,6 +482,7 @@ func (s *Suite) callBeforeSteps(ctx Context) {
 	for _, f := range s.options.beforeStep {
 		f(ctx)
 	}
+
 }
 
 func (s *Suite) callAfterSteps(ctx Context) {
@@ -471,48 +492,56 @@ func (s *Suite) callAfterSteps(ctx Context) {
 }
 
 func (s *Suite) runScenario(ctx Context, scenario *msgs.GherkinDocument_Feature_Scenario,
-	bkg *msgs.GherkinDocument_Feature_Background, t *testing.T) {
+	bkg *msgs.GherkinDocument_Feature_Background, t *testing.T) cucumber.Scenario {
+	formattedscenario := cucumber.FormatScenario(scenario)
 	t.Run(fmt.Sprintf("%s %s", strings.TrimSpace(scenario.Keyword), scenario.Name), func(t *testing.T) {
 		// NOTE consider passing t as argument to scenario hooks
 		ctx.Set(TestingTKey{}, t)
 		defer ctx.Set(TestingTKey{}, nil)
+
+		//TODO: ADD Report Formatted Scenario Object to FEATURE OBJECT fetched from Context
 
 		s.callBeforeScenarios(ctx)
 		defer s.callAfterScenarios(ctx)
 
 		if bkg != nil {
 			steps := s.getBackgroundSteps(bkg)
-			s.runSteps(ctx, t, steps)
+			s.runSteps(ctx, t, steps, cucumber.Scenario{})
 		}
 		steps := scenario.Steps
 		if examples := scenario.GetExamples(); len(examples) > 0 {
 			c := ctx.Clone()
 			steps = s.getOutlineStep(scenario.GetSteps(), examples)
-			s.runSteps(c, t, steps)
+			formattedscenario = s.runSteps(c, t, steps, formattedscenario)
 		} else {
 			c := ctx.Clone()
-			s.runSteps(c, t, steps)
+			formattedscenario = s.runSteps(c, t, steps, formattedscenario)
 		}
 	})
+	return formattedscenario
 }
 
-func (s *Suite) runSteps(ctx Context, t *testing.T, steps []*msgs.GherkinDocument_Feature_Step) {
+func (s *Suite) runSteps(ctx Context, t *testing.T, steps []*msgs.GherkinDocument_Feature_Step, formattedscenario cucumber.Scenario) cucumber.Scenario {
 	for _, step := range steps {
-		s.runStep(ctx, t, step)
+		formatStep(ctx)
+		formattedstep := s.runStep(ctx, t, step)
+		formattedscenario.AddStepObj(formattedstep)
 	}
+	return formattedscenario
 }
 
-func (s *Suite) runStep(ctx Context, t *testing.T, step *msgs.GherkinDocument_Feature_Step) {
+func (s *Suite) runStep(ctx Context, t *testing.T, step *msgs.GherkinDocument_Feature_Step) cucumber.Step {
 	defer func() {
 		if r := recover(); r != nil {
 			t.Error(r)
 		}
 	}()
-
 	def, err := s.findStepDef(step.Text)
 	if err != nil {
 		t.Fatalf("cannot find step definition for step: %s%s", step.Keyword, step.Text)
 	}
+
+	var failed, skipped bool
 
 	params := def.expr.FindSubmatch([]byte(step.Text))[1:]
 	t.Run(fmt.Sprintf("%s %s", strings.TrimSpace(step.Keyword), step.Text), func(t *testing.T) {
@@ -522,31 +551,70 @@ func (s *Suite) runStep(ctx Context, t *testing.T, step *msgs.GherkinDocument_Fe
 
 		//Timer for test duration
 		t.Logf("Executing Step <<%v>>", step.Text)
-		starttimer(ctx)
 
 		s.callBeforeSteps(ctx)
 		defer s.callAfterSteps(ctx)
-
-		//Method to register the test running status & test duration
-		defer registerStepstatus(ctx)
+		defer check(ctx)
 
 		def.run(ctx, t, params)
+		failed = t.Failed()
+		skipped = t.Skipped()
 	})
+
+	return generateFormattedStep(ctx, step, failed, skipped)
 }
 
-func registerStepstatus(ctx Context) {
+func generateFormattedStep(ctx Context, step *msgs.GherkinDocument_Feature_Step, isfailed bool, isskipped bool) cucumber.Step {
 	start, _ := ctx.Get(time.Time{})
 	duration := time.Since(start.(time.Time))
 
-	tObj, _ := ctx.Get(TestingTKey{})
-	t := tObj.(*testing.T)
-	t.Logf("Step Execution time is %v", duration)
-	t.Logf("Scenario failed status %v", t.Failed())
-	t.Logf("Scenario skipped status %v", t.Skipped())
+	status := "passed"
+
+	if isfailed {
+		status = "failed"
+	}
+
+	if isskipped {
+		status = "skipped"
+	}
+
+	formattedstep := cucumber.GenerateStep(step.GetKeyword(), step.GetText(), int(step.Location.GetLine()), "")
+	formattedstep.UpdateResult(status, duration.Microseconds())
+	return formattedstep
 }
 
-func starttimer(ctx Context) {
+func check(ctx Context) {
+	testingObj, _ := ctx.Get(TestingTKey{})
+	t := testingObj.(*testing.T)
+	t.Logf("Step Data:  Duration- %v , <isFailed: %v <isSkipped: %v", 0, t.Failed(), t.Skipped())
+}
+
+/*
+func registerStepstatus(ctx Context, t *testing.T, gherkinstep *msgs.GherkinDocument_Feature_Step) cucumber.Step {
+	start, _ := ctx.Get(time.Time{})
+	duration := time.Since(start.(time.Time))
+
+	status := "passed"
+
+	if t.Failed() {
+		status = "failed"
+	}
+
+	if t.Skipped() {
+		status = "skipped"
+	}
+
+	t.Logf("Step Data:  Duration- %v , <isFailed: %v <isSkipped: %v", duration, t.Failed(), t.Skipped())
+
+	formattedstep := cucumber.GenerateStep(gherkinstep.GetKeyword(), gherkinstep.GetText(), int(gherkinstep.Location.GetLine()), "")
+	formattedstep.UpdateResult(status, duration.Microseconds())
+	return formattedstep
+}*/
+
+func formatStep(ctx Context) {
+	//Start timer for Step duration
 	ctx.Set(time.Time{}, time.Now())
+
 }
 
 func (def *stepDef) run(ctx Context, t TestingT, params [][]byte) { // nolint:interfacer

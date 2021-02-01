@@ -20,7 +20,6 @@ type Scenario struct {
 	Type        string `json:"type"`
 }
 
-
 type Tag struct {
 	Name       string `json:"name"`
 	Linenumber int    `json:"line"`
@@ -34,7 +33,6 @@ type Step struct {
 	Line       int          `json:"line"`
 }
 
-
 type Stepresult struct {
 	RunStatus     string `json:"status"`
 	ExecutionTime int64  `json:"duration"`
@@ -44,7 +42,9 @@ type Filelocation struct {
 	Location string `json:"location"`
 }
 
-
+func GenerateScenario() Scenario {
+	return Scenario{}
+}
 
 func GenerateFeature(name string, id string, description string, line int) Feature {
 	return Feature{
@@ -62,8 +62,7 @@ func (f *Feature) AddScenario(sc Scenario) {
 	f.Elements = append(f.Elements, sc)
 }
 
-
-func (sc *Scenario) AddStep(keyword string, name string, line int, location string) {
+func GenerateStep(keyword string, name string, line int, location string) Step {
 	newstep := Step{
 		StepResult: Stepresult{},
 		match:      Filelocation{Location: location},
@@ -71,9 +70,25 @@ func (sc *Scenario) AddStep(keyword string, name string, line int, location stri
 		Name:       name,
 		Line:       line,
 	}
-	sc.Steps = append(sc.Steps, newstep)
+	return newstep
 }
 
+func (sc *Scenario) AddStepObj(step Step) {
+	sc.Steps = append(sc.Steps, step)
+}
+
+func (sc *Scenario) AddStep(keyword string, name string, line int, location string, result string) {
+	newstep := Step{
+		StepResult: Stepresult{
+			RunStatus: result,
+		},
+		match:   Filelocation{Location: location},
+		Keyword: keyword,
+		Name:    name,
+		Line:    line,
+	}
+	sc.Steps = append(sc.Steps, newstep)
+}
 
 func (s *Step) UpdateResult(status string, duration int64) {
 	s.StepResult = Stepresult{

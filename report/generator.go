@@ -1,10 +1,10 @@
 package report
 
 import (
-	"github.com/anuragh27crony/gobdd/formatter/cucumber"
 	"bufio"
 	"encoding/json"
 	"fmt"
+	"github.com/anuragh27crony/gobdd/formatter/cucumber"
 	"github.com/cucumber/gherkin-go/v13"
 	msgs "github.com/cucumber/messages-go/v12"
 	"io/ioutil"
@@ -33,7 +33,7 @@ func parseFeatures() []cucumber.Feature {
 			fmt.Println("Empty Feature FIles")
 		}
 
-		features = append(features, cucumber.FormatFeature(doc.Feature))
+		features = append(features, cucumber.FormatFeatureWithScenario(doc.Feature))
 	}
 	return features
 }

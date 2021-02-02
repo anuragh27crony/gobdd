@@ -22,10 +22,10 @@ func FormatScenario(gherkinScenario *msgs.GherkinDocument_Feature_Scenario) Scen
 	sc := Scenario{
 		Steps: nil, Tags: FormatTags(gherkinScenario.GetTags()),
 		Id:          gherkinScenario.GetId(),
-		Keyword:     gherkinScenario.GetKeyword(),
+		Keyword:     "scenario",
 		Name:        gherkinScenario.GetName(),
 		Description: gherkinScenario.GetDescription(),
-		Type:        gherkinScenario.GetKeyword(),
+		Type:        "scenario",
 	}
 	return sc
 }
@@ -34,10 +34,10 @@ func FormatScenarioWithSteps(gherkinScenario *msgs.GherkinDocument_Feature_Scena
 	sc := Scenario{
 		Steps: nil, Tags: FormatTags(gherkinScenario.GetTags()),
 		Id:          gherkinScenario.GetId(),
-		Keyword:     gherkinScenario.GetKeyword(),
+		Keyword:     "scenario",
 		Name:        gherkinScenario.GetName(),
 		Description: gherkinScenario.GetDescription(),
-		Type:        gherkinScenario.GetKeyword(),
+		Type:        "scenario",
 	}
 
 	for _, steps := range gherkinScenario.Steps {

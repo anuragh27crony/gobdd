@@ -554,11 +554,16 @@ func (s *Suite) runStep(ctx Context, t *testing.T, step *msgs.GherkinDocument_Fe
 
 		s.callBeforeSteps(ctx)
 		defer s.callAfterSteps(ctx)
-		defer check(ctx)
+		//defer check(ctx)
+		defer func() {
+			failed = t.Failed()
+			skipped = t.Skipped()
+			t.Logf("Step Data:  Duration- %v , <isFailed: %v <isSkipped: %v", 0, t.Failed(), t.Skipped())
+		}()
 
 		def.run(ctx, t, params)
-		failed = t.Failed()
-		skipped = t.Skipped()
+		//failed = t.Failed()
+		//skipped = t.Skipped()
 	})
 
 	return generateFormattedStep(ctx, step, failed, skipped)

@@ -34,6 +34,7 @@ type Step struct {
 }
 
 type Stepresult struct {
+	ErrorMsg      string `json:"error_message"`
 	RunStatus     string `json:"status"`
 	ExecutionTime int64  `json:"duration"`
 }

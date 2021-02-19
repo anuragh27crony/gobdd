@@ -554,7 +554,6 @@ func (s *Suite) runStep(ctx Context, t *testing.T, step *msgs.GherkinDocument_Fe
 
 		s.callBeforeSteps(ctx)
 		defer s.callAfterSteps(ctx)
-		//defer check(ctx)
 		defer func() {
 			failed = t.Failed()
 			skipped = t.Skipped()
@@ -584,37 +583,9 @@ func generateFormattedStep(ctx Context, step *msgs.GherkinDocument_Feature_Step,
 	}
 
 	formattedstep := cucumber.GenerateStep(step.GetKeyword(), step.GetText(), int(step.Location.GetLine()), "")
-	formattedstep.UpdateResult(status, duration.Microseconds())
+	formattedstep.UpdateResult(status, duration.Milliseconds())
 	return formattedstep
 }
-
-func check(ctx Context) {
-	testingObj, _ := ctx.Get(TestingTKey{})
-	t := testingObj.(*testing.T)
-	t.Logf("Step Data:  Duration- %v , <isFailed: %v <isSkipped: %v", 0, t.Failed(), t.Skipped())
-}
-
-/*
-func registerStepstatus(ctx Context, t *testing.T, gherkinstep *msgs.GherkinDocument_Feature_Step) cucumber.Step {
-	start, _ := ctx.Get(time.Time{})
-	duration := time.Since(start.(time.Time))
-
-	status := "passed"
-
-	if t.Failed() {
-		status = "failed"
-	}
-
-	if t.Skipped() {
-		status = "skipped"
-	}
-
-	t.Logf("Step Data:  Duration- %v , <isFailed: %v <isSkipped: %v", duration, t.Failed(), t.Skipped())
-
-	formattedstep := cucumber.GenerateStep(gherkinstep.GetKeyword(), gherkinstep.GetText(), int(gherkinstep.Location.GetLine()), "")
-	formattedstep.UpdateResult(status, duration.Microseconds())
-	return formattedstep
-}*/
 
 func formatStep(ctx Context) {
 	//Start timer for Step duration

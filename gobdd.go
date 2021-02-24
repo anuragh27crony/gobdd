@@ -583,7 +583,7 @@ func generateFormattedStep(ctx Context, step *msgs.GherkinDocument_Feature_Step,
 	}
 
 	formattedstep := cucumber.GenerateStep(step.GetKeyword(), step.GetText(), int(step.Location.GetLine()), "")
-	formattedstep.UpdateResult(status, duration.Milliseconds())
+	formattedstep.UpdateResult(status, duration.Nanoseconds())
 	return formattedstep
 }
 
